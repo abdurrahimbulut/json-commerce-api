@@ -1,0 +1,31 @@
+const path = require("path");
+const multer =require("multer");
+const CustomError = require("../../helpers/error/CustomError");
+
+
+const storage = multer.diskStorage({
+    destination : function(req,file,callback) {
+
+        const rootDir = path.dirname(require.main.filename);
+        callback(null,path.join(rootDir,"/public/uploads/profileImages"));
+    },
+    filename : function(req,file,callback){
+        const extension = file.mimetype.split("/")[1];
+        req.savedProfileImage = "image_"+ req.user.id +"."+extension;
+
+        callback(null,req.savedProfileImage);
+    }
+});
+
+const fileFilter = (req,file,callback)=>{
+    let allowedMimeTypes = ["image/jpg","image/jpeg","image/png"];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+        return callback(new CustomError("Please provide a valid image file",400),false);
+    }
+    return callback(null,true);
+}
+
+
+const profileImageUpload =multer({storage,fileFilter});
+
+module.exports = {profileImageUpload}
